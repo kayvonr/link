@@ -136,7 +136,7 @@ class APIClientMessage(object):
         self._message = message
 
 
-from link.utils import array_pagenate
+from link.utils import array_paginate
 import types
 
 class APIClient(APIClientMessage):
@@ -178,19 +178,19 @@ class APIClient(APIClientMessage):
     def __str__(self):
         return json.dumps(self.response, cls = APIEncoder)
     
-    def pagenate(self, per_page=100):
+    def paginate(self, per_page=100):
         """
         Returns you an iterator of this response chunked into 
         """
         #TODO: need a test for this
-        self._pages = array_pagenate(per_page, self.message)
+        self._pages = array_paginate(per_page, self.message)
 
     def next_page(self):
         """
         Returns the next page that is in the generator
         """
         if not self._pages:
-            self.pagenate()
+            self.paginate()
 
         #this is sorta weird, but you want to make that object's message just be
         #next one in the list. Remove the Nones.  There is probably a way to

@@ -119,7 +119,7 @@ class TestAPIResponse(unittest.TestCase):
         self.assertTrue(api.next_page().message == message)
 
         api = APIResponse(message=message)
-        api.pagenate(3)
+        api.paginate(3)
         self.assertTrue(api.next_page().message == [1,2,3])
         self.assertTrue(api.next_page().message == [4,5,6])
         self.assertTrue(api.next_page().message == [7])

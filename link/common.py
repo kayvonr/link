@@ -1,25 +1,7 @@
 import json
 
-#class Node(object):
-    #"""
-    #This is a node for your data
-    #"""
-    #def __init__(self, data = None, key=None, hierarchy = None, rules = None):
-        #self.key = key 
-
-        #self.hierarchy = hierarchy
-        #if hierarchy == None:
-            #self.hierarchy = []
-
-        #self.data = data
-        #super(Node, self).__init__()
-
-    #def apply(self):
-        #pass
-
 class Cacheable(object):
-    """
-    on object that has a cache built into it for storing data
+    """An object that has a cache built into it for storing data.
     """
     def __init__(self, read_permissions = None, write_permissions = None):
         """
@@ -34,7 +16,7 @@ class Cacheable(object):
         Put <key> into the cache into the cache.  If Link is configured to it
         will put it into the end datastore.  Will also make sure that it has
         clean data before writing::
-            
+
             key: the key that you want to store data at
             data: the data that you want to cache
         """
@@ -50,30 +32,9 @@ class Cacheable(object):
         """
         return self.cache.get(key)
 
-    
-#class Result(Node):
-    #"""
-    #A result of a rule being applied to the data
-    #"""
-    #def __init__(self, result, data=None, actions=None, key=None, hierarchy=None):
-        #self.result = result
-        #self.data = data
-        #self.actions = actions
-        #super(Result, self).__init__(key, hierarchy)
-
-#class Rule(object):
-    #"""
-    #A rule is applied to data and if a row of data passes then the actions are
-    #taking actions are 
-    #"""
-
-    #def __init__(self, data = None, results= None):
-        #self.data = data
-        #self.actions = actions
-
 class Single(object):
-    """
-    Creates a singleton
+    """Creates a singleton.
+
     """
     _instance = None
     def __new__(cls, *args, **kwargs):
@@ -82,84 +43,19 @@ class Single(object):
                 cls, *args, **kwargs)
         return cls._instance
 
-#class Data(Single, Cacheable):
-    #"""
-    #Encapsulates data from a database
-    #"""
-    #def __init__(self, data = None,query = None, table = None):
-        #self.table = table
-        #self.data = data
-        #self.query = query
-        #super(Data, self).__init__()
-
-    #def __call__(self):
-        #print self.table
-        #print self.data
-        #print self.query
-
-    #def __iter__(self):
-        #"""
-        #If it's never set then throw an exception
-        #"""
-        #if self.data == None:
-            #raise Exception("No data to iterate through")
-
-        #return self.data.__iter__()
-
-#class DataSet(Single, Cacheable):
-    #"""
-    #Encapsulates data from a database
-    #"""
-    #def __init__(self, data = None):
-        #self.data = data
-        #super(Data, self).__init__()
-    
-    #def __call__(self):
-        #pass
-
-    #def cache_get(self):
-        #pass
-
-    #def __iter__(self):
-        #"""
-        #If it's never set then throw an exception
-        #"""
-        #if self.data == None:
-            #raise Exception("No data to iterate through")
-
-        #return self.data.__iter__()
-
-    #def refresh(self):
-        #"""
-        #A function that allows you to refresh a full dataset.  
-        #"""
-        #pass
-
-#class Action(object):
-    #pass
-
-#class Actions(object):
-
-    #def __init__(self, actions = None, query = None, table = None):
-        #self.actions = actions
-        #self.table = table
-        #self.query = query
-        #super(Actions, self).__init__()
-
 import datetime
 
 class APIEncoder(json.JSONEncoder):
-    """
-    The json encoder we will use for our APIs
-    """
+    """The JSON encoder we use for our APIs.
 
+    """
     def default(self, obj):
-        #Need to do type == not isinstance()
+        # FIXME: Need to do type comparison, not isinstance().
         if isinstance(obj, APIObject):
             if isinstance(obj, APIResponse):
                 return obj.response
             return obj.message
-        
+
         #we will use the default format...but we probably want to make this
         #configurable
         if isinstance(obj, datetime.datetime):
@@ -172,27 +68,24 @@ class APIEncoder(json.JSONEncoder):
 
 
 class APIObject(object):
+    """An APIObject could also be a node.
+
+    The key is really a key_tail.  It does not need to have a hierarchy.
+
     """
-    An APIObject could also be a node.  
 
-    The key is really a key_tail.  It does not need to have a hierarchy
-
-    """
-
-    def __init__(self, message = None, warnings = None ,
-                error = None):
+    def __init__(self,
+                 message  = None,
+                 warnings = None,
+                 error    = None
+                 ):
         self._message = message
         self.error = error
         self.warnings = warnings
-        super(APIObject, self).__init__()
-    
+
     @classmethod
     def api_object_name(cls):
-        return cls.__name__.lower() 
-
-    #@property 
-    #def json(self):
-        #return self._json
+        return cls.__name__.lower()
 
     def __getitem__(self, name):
         try:
@@ -202,7 +95,7 @@ class APIObject(object):
 
     def __iter__(self):
         return self.json.__iter__()
-    
+
     def get(self, name):
         return self.message.get(name)
 
@@ -214,8 +107,9 @@ class APIObject(object):
 
     @property
     def response_label(self):
-        """
-        Only get's called the first time, then it is cached in self.NAME
+        """Only gets called the first time, then it is cached
+        in self.NAME.
+
         """
         return self.api_object_name()
 
@@ -223,11 +117,11 @@ class APIObject(object):
     def response(self):
         _json = {}
 
-        #if there is an error don't continue
+        # If there is an error don't continue.
         if self.error:
             _json['error'] = self.error
             return _json
-        
+
         _json['status'] = 'ok'
 
         if self.message!=None:
@@ -246,73 +140,61 @@ class APIObject(object):
         self._message = message
 
 
-from utils import array_pagenate
+from utils import array_paginate
 import types
 
 class APIResponse(APIObject):
+    """Used to help make standardized JSON responses to API
+    calls.
+
     """
-    Used to help make standardized Json responses to API's
-    """
-    def __init__(self, message = None, warnings = None, error = None,
-                 seek = None, response_id = None,auth=None):
-        super(APIResponse, self).__init__(message, error = error,
-                                        warnings = warnings)
+    def __init__(self,
+                 message     = None,
+                 warnings    = None,
+                 error       = None,
+                 seek        = None,
+                 response_id = None,
+                 auth        = None
+                 ):
+        super(APIResponse, self).__init__(message, error=error, warnings=warnings)
         if seek:
             self.seek(*seek)
-
         self._pages = None
-
-        if auth and isinstance(types.FunctionType):
-            #if its a function call then call it and set that to auth
+        if callable(auth):
             self.auth = auth()
-            
-        #let's try this out and see if its any good. 
-        #each response get's a unique uuid
-        self.response_id = response_id 
+        self.response_id = response_id
 
     def auth(self):
         raise NotImplementedError()
-    
+
     def seek(self, *kargs):
         raise NotImplementedError()
 
-    #def __getitem__(self, key):
-        #return self.response[key]
-    
-    #def get(self, key):
-        #return self.response.get(key)
- 
-    #def iteritems(self):
-        #return self.message.iteritems()
-
     def __str__(self):
-        return json.dumps(self.response, cls = APIEncoder)
-    
-    def pagenate(self, per_page=100):
+        return json.dumps(self.response, cls=APIEncoder)
+
+    def paginate(self, per_page=100):
+        """Returns you an iterator of this response chunked
+        into per_page items per page.
+
         """
-        Returns you an iterator of this response chunked into 
-        """
-        #TODO: need a test for this
-        self._pages = array_pagenate(per_page, self.message)
+        self._pages = array_paginate(per_page, self.message, pad=False)
 
     def next_page(self):
-        """
-        Returns the next page that is in the generator
+        """Returns the next page that is in the generator.
+
         """
         if not self._pages:
-            self.pagenate()
-
-        #this is sorta weird, but you want to make that object's message just be
-        #next one in the list. Remove the Nones.  There is probably a way to
-        #make it so it doesn't have to pad
+            self.paginate()
         try:
-            next = self._pages.next() 
+            page = self._pages.next()
         except StopIteration as e:
-            #if we are done then set the message to nothing
+            # If we are done then set the message to nothing
+            # FIXME: This seems wrong.
             self.set_message([])
             return self
 
-        message = [x for x in next if x !=None] 
+        message = [x for x in page if x is not None]
         self.set_message(message)
         #TODO: need a test for this
         return self

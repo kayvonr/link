@@ -4,11 +4,11 @@ link
 ~~~~~~~~~~~~
 
 The link module helps you connect to all of the data sources you need through a
-simple configuration 
-    
+simple configuration.
+
 Sample Config to connect to mysql::
 
-   { 
+   {
         "dbs":{
            "my_db": {
                "wrapper": "MysqlDB",
@@ -23,7 +23,7 @@ Sample Config to connect to mysql::
 Sample Code::
 
     In [3]: from link import lnk
-    
+
     # uses the keys from your configuration to look up and create the
     # appropriate objects
     In [35]: my_db = lnk.dbs.my_db
@@ -34,7 +34,9 @@ Sample Code::
 :license: Apache2, see LICENSE for more details.
 
 """
-#import all of this version information
+
+# Import all of this version information.
+#
 __version__ = '0.1.9'
 __author__ = 'David Himrod'
 __license__ = 'Apache 2.0'
@@ -42,5 +44,4 @@ __copyright__ = 'Copyright 2013 David Himrod'
 __title__ = 'link'
 
 from .link import Link, Wrapper, lnk
-
 from common import *

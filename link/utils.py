@@ -47,14 +47,12 @@ def list_to_dataframe(rows, names):
 
     return DataFrame(columns, columns=names)
 
-def array_pagenate(n, iterable, padvalue=None):
+def array_paginate(n, iterable, padvalue=None, pad=True):
     """Takes an array like [1,2,3,4,5] and splits it into evenly-sized
     chunks.
 
-    The last chunk is padded with the specified padvalue to
+    If pad is True, The last chunk is padded with the specified padvalue to
     ensure its length equals that of the other chunks.
 
     """
     return izip(*[chain(iterable, repeat(padvalue, n-1))]*n)
-
-array_paginate = array_pagenate
