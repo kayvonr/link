@@ -1,0 +1,81 @@
+import logging
+import logging.config
+from inspect import getouterframes, currentframe
+# TODO: add hostname to loggs?
+# from socket import gethostname
+
+
+class LoggingHandler(object):
+    """
+    Class that sets up logging (optionally from a conf) and allows you to log to files,
+    stdout, etc...
+    """
+
+    def __init__(self, conf={}, verbose=False):
+        """
+        :param dict conf: optional, logging configuration defined in link.config
+        :param bool verbose: whether to set verbose logging. This will add a handler that
+            prints DEBUG and higher level to stdout
+        """
+        if conf:
+            self._set_up_logging(conf, verbose)
+        # If no logging conf specified, then just set up logging to stdout
+        else:
+            self._set_up_verbose_logging()
+
+    # TODO - finish
+    def _set_up_logging(self, conf, verbose):
+        logging.config.dictConfig(conf)
+
+        for handler in logging.getLogger('').handlers:
+            handler.setFormatter(self._log_format())
+
+        if verbose:
+            self._set_up_verbose_logging()
+        return
+
+    def _log_format(self):
+        msg_format = "%(asctime)s %(levelname)s %(message)s"
+        date_format = '%Y-%m-%d %H:%M:%S'
+        frmt = logging.Formatter(msg_format, date_format)
+        return frmt
+
+    def _set_up_verbose_logging(self):
+        import sys
+        verbose_hndlr = logging.StreamHandler(stream=sys.stdout)
+        verbose_hndlr.setFormatter(self._log_format())
+        verbose_hndlr.setLevel(logging.DEBUG)
+
+        root = logging.getLogger('')
+        root.addHandler(verbose_hndlr)
+        root.setLevel(logging.DEBUG)
+        return
+
+    def debug(self, msg, exc_info=False):
+        self.write(msg, level=logging.DEBUG, exc_info=exc_info)
+
+    def info(self, msg, exc_info=False):
+        self.write(msg, level=logging.INFO, exc_info=False)
+
+    def warn(self, msg, exc_info=True):
+        self.write(msg, level=logging.WARN, exc_info=exc_info)
+
+    def crit(self, msg, exc_info=True):
+        self.write(msg, level=logging.CRITICAL, exc_info=exc_info)
+
+    def write(self, msg, level=logging.INFO, exc_info=False, extras=None):
+        self._write(msg, level, exc_info, extras)
+
+    def _write(self, msg, level, exc_info, extras=None):
+        # Attach filename and line number of caller to the log (from ``inspect`` module)
+        # calling frame is 3 up
+        caller_info = getouterframes(currentframe())[3]
+        # Get filename from full path
+        caller_file = caller_info[1].split('/')[-1]
+        # And line number
+        lineno = caller_info[2]
+
+        body = "{}:{} {}".format(caller_file, lineno, msg)
+
+        logging.log(level, body, exc_info=exc_info)
+
