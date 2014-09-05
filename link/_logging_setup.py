@@ -1,11 +1,11 @@
 import logging
 import logging.config
 from inspect import getouterframes, currentframe
-# TODO: add hostname to loggs?
+# TODO: add hostname to logs?
 # from socket import gethostname
 
 
-class LoggingHandler(object):
+class LogHandler(object):
     """
     Class that sets up logging (optionally from a conf) and allows you to log to files,
     stdout, etc...
@@ -25,12 +25,13 @@ class LoggingHandler(object):
 
     # TODO - finish
     def _set_up_logging(self, conf, verbose):
-        logging.config.dictConfig(conf)
+        if conf:
+            logging.config.dictConfig(conf)
 
-        for handler in logging.getLogger('').handlers:
-            handler.setFormatter(self._log_format())
+            for handler in logging.getLogger('').handlers:
+                handler.setFormatter(self._log_format())
 
-        if verbose:
+        if verbose or not conf:
             self._set_up_verbose_logging()
         return
 
@@ -48,7 +49,7 @@ class LoggingHandler(object):
 
         root = logging.getLogger('')
         root.addHandler(verbose_hndlr)
-        root.setLevel(logging.DEBUG)
+        root.setLevel(logging.INFO)
         return
 
     def debug(self, msg, exc_info=False):
@@ -57,10 +58,10 @@ class LoggingHandler(object):
     def info(self, msg, exc_info=False):
         self.write(msg, level=logging.INFO, exc_info=False)
 
-    def warn(self, msg, exc_info=True):
+    def warn(self, msg, exc_info=False):
         self.write(msg, level=logging.WARN, exc_info=exc_info)
 
-    def crit(self, msg, exc_info=True):
+    def crit(self, msg, exc_info=False):
         self.write(msg, level=logging.CRITICAL, exc_info=exc_info)
 
     def write(self, msg, level=logging.INFO, exc_info=False, extras=None):

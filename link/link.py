@@ -45,7 +45,7 @@ from subprocess import Popen
 from common import Cacheable
 
 # To set up logging manager
-from _logging_setup import LoggingHandler
+from _logging_setup import LogHandler
 
 # this gets the current directory of link
 lnk_dir = os.path.split(os.path.abspath(__file__))[0]
@@ -334,9 +334,34 @@ class Link(object):
         self.wrappers = {}
         self.fresh(config_file, namespace)
 
+    def configure_msg(self, overrides={}, keep_existing=True, verbose=False):
+        """
+        Optional method to supplement or override logging configuration from a passed-in
+        dictionary; OR to turn on verbose logging. If this method is not invoked,
+        logging will be set up with any logging configurations found in the link config.
+        This method is useful if you want to define job- or application-specific logging
+        setups, so that you do not have to keep changing link.config.
+
+        NOTE: if this is called after lnk.msg has been used, it will create a new
+        LogHandler that will override the existing one.
+
+        :param dict overrides: dictionary of logging options
+        :param bool keep_existing: whether to supplement (True) or completely override
+            (False) any existing logging (i.e. link.config options).
+        """
+        if not keep_existing:
+            log_conf = overrides
+        else:
+            log_conf = self._config.get('msg', {})
+            log_conf.update(overrides)
+
+        self.__msg = LogHandler(log_conf, verbose)
+        return self.__msg
+
     # The fact that Link is a singleton should ensure that only one instance of
-    # LoggingHandler will be created (if Link is used correctly...)
-    def get_msg(self, verbose=False):
+    # LogHandler will be created (if Link is used correctly...)
+    @property
+    def msg(self, verbose=False):
         """
         Get (and create if doesn't already have) the LoggingHandler for link
 
@@ -344,7 +369,7 @@ class Link(object):
             logging setup
         """
         if not self.__msg:
-            self.__msg = LoggingHandler(self._config.get('logging', {}), verbose)
+            self.__msg = LogHandler(self._config.get('msg', {}), verbose)
         return self.__msg
 
     def __getattr__(self, name):
