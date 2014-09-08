@@ -1,9 +1,6 @@
 import logging
 import logging.config
 from inspect import getouterframes, currentframe
-# TODO: add hostname to logs?
-# from socket import gethostname
-
 
 class LogHandler(object):
     """
@@ -13,35 +10,42 @@ class LogHandler(object):
 
     def __init__(self, conf={}, verbose=False):
         """
-        :param dict conf: optional, logging configuration defined in link.config
+        :param dict conf: optional, logging configuration defined in link.config under
+            top-level key "msg"
         :param bool verbose: whether to set verbose logging. This will add a handler that
-            prints DEBUG and higher level to stdout
+            prints INFO and higher level to stdout
         """
-        if conf:
-            self._set_up_logging(conf, verbose)
-        # If no logging conf specified, then just set up logging to stdout
-        else:
-            self._set_up_verbose_logging()
+        self._set_up_logging(conf, verbose)
 
-    # TODO - finish
     def _set_up_logging(self, conf, verbose):
         if conf:
             logging.config.dictConfig(conf)
 
+            # Currently, any handlers you specify in the link.config will have their
+            # Formatters overriden with the standardized one provided below.
+            frmt = self._log_format()
             for handler in logging.getLogger('').handlers:
-                handler.setFormatter(self._log_format())
+                handler.setFormatter(frmt)
 
+        # If you have either specified verbose logging, or no logging configuration was
+        # provided, verbose logging (to stdout) will be enabled.
         if verbose or not conf:
             self._set_up_verbose_logging()
         return
 
     def _log_format(self):
+        """
+        Defines a standard Timestamp to add to all logs: Year-Month-Day Hour:Min:Sec
+        """
         msg_format = "%(asctime)s %(levelname)s %(message)s"
         date_format = '%Y-%m-%d %H:%M:%S'
         frmt = logging.Formatter(msg_format, date_format)
         return frmt
 
     def _set_up_verbose_logging(self):
+        """
+        Attaches a handler to root logger that writes to stdout.
+        """
         import sys
         verbose_hndlr = logging.StreamHandler(stream=sys.stdout)
         verbose_hndlr.setFormatter(self._log_format())
