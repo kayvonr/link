@@ -8,7 +8,7 @@ class LogHandler(object):
     stdout, etc...
     """
 
-    def __init__(self, conf={}, verbose=False):
+    def __init__(self, conf=None, verbose=False):
         """
         :param dict conf: optional, logging configuration defined in link.config under
             top-level key "msg"

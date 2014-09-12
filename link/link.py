@@ -334,7 +334,7 @@ class Link(object):
         self.wrappers = {}
         self.fresh(config_file, namespace)
 
-    def configure_msg(self, overrides={}, keep_existing=True, verbose=False):
+    def configure_msg(self, overrides=None, keep_existing=True, verbose=False):
         """
         Optional method to supplement or override logging configuration from a passed-in
         dictionary; OR to turn on verbose logging. If this method is not invoked,
@@ -353,6 +353,7 @@ class Link(object):
             log_conf = overrides
         else:
             log_conf = self._config.get('msg', {})
+            overrides = overrides or {}
             log_conf.update(overrides)
 
         self.__msg = LogHandler(log_conf, verbose)
